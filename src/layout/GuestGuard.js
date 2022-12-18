@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 // project imports
-import Customization from './Customization';
+// import Customization from './Customization';
 import GuestGuard from 'utils/route-guard/GuestGuard';
 import NavMotion from './NavMotion';
 
@@ -12,7 +12,7 @@ const GuestGuardLayout = ({ children }) => (
     <GuestGuard>
       <>
         {children}
-        <Customization />
+        {/* <Customization /> */}
       </>
     </GuestGuard>
   </NavMotion>

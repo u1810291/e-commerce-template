@@ -10,7 +10,6 @@ import {
   Grid,
   IconButton,
   InputAdornment,
-  Rating,
   Table,
   TableBody,
   TableCell,
@@ -27,13 +26,10 @@ import {
 import { visuallyHidden } from '@mui/utils';
 
 // project imports
-import Layout from 'layout';
-import Page from 'components/ui-component/Page';
-import ReviewEdit from 'components/application/customer/ProductReview/ReviewEdit';
-import MainCard from 'components/ui-component/cards/MainCard';
 import Chip from 'components/ui-component/extended/Chip';
+import MainCard from 'components/ui-component/cards/MainCard';
 import { useDispatch, useSelector } from 'store';
-import { getProductReviews } from 'store/slices/customer';
+import { getOrders } from 'store/slices/customer';
 
 // assets
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -69,35 +65,42 @@ function stableSort(array, comparator) {
 }
 
 // table header options
+
 const headCells = [
+  {
+    id: 'id',
+    numeric: true,
+    label: 'ID',
+    align: 'center'
+  },
   {
     id: 'name',
     numeric: false,
-    label: 'Product Name',
+    label: 'Customer Name',
     align: 'left'
   },
   {
-    id: 'author',
+    id: 'company',
     numeric: true,
-    label: 'Author',
+    label: 'Branch',
     align: 'left'
   },
   {
-    id: 'review',
+    id: 'type',
     numeric: true,
-    label: 'Review',
+    label: 'Payment Type',
     align: 'left'
   },
   {
-    id: 'rating',
+    id: 'qty',
     numeric: true,
-    label: 'Rating',
-    align: 'center'
+    label: 'Quantity',
+    align: 'right'
   },
   {
     id: 'date',
     numeric: true,
-    label: 'Date',
+    label: 'Registered',
     align: 'center'
   },
   {
@@ -167,7 +170,7 @@ function EnhancedTableHead({ onSelectAllClick, order, orderBy, numSelected, rowC
           />
         </TableCell>
         {numSelected > 0 && (
-          <TableCell padding="none" colSpan={7}>
+          <TableCell padding="none" colSpan={8}>
             <EnhancedTableToolbar numSelected={selected.length} />
           </TableCell>
         )}
@@ -216,21 +219,11 @@ EnhancedTableHead.propTypes = {
   rowCount: PropTypes.number.isRequired
 };
 
-// ==============================|| PRODUCT REVIEW LIST ||============================== //
+// ==============================|| ORDER LIST ||============================== //
 
-const ProductReviewList = () => {
+const TableList = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-
-  // open dialog to edit review
-  const [open, setOpen] = React.useState(false);
-  const handleClickOpenDialog = () => {
-    setOpen(true);
-  };
-  const handleCloseDialog = () => {
-    setOpen(false);
-  };
-
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('calories');
   const [selected, setSelected] = React.useState([]);
@@ -238,16 +231,13 @@ const ProductReviewList = () => {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [search, setSearch] = React.useState('');
   const [rows, setRows] = React.useState([]);
-  const { productreviews } = useSelector((state) => state.customer);
-
+  const { orders } = useSelector((state) => state.customer);
   React.useEffect(() => {
-    dispatch(getProductReviews());
+    dispatch(getOrders());
   }, [dispatch]);
-
   React.useEffect(() => {
-    setRows(productreviews);
-  }, [productreviews]);
-
+    setRows(orders);
+  }, [orders]);
   const handleSearch = (event) => {
     const newString = event.target.value;
     setSearch(newString || '');
@@ -256,7 +246,7 @@ const ProductReviewList = () => {
       const newRows = rows.filter((row) => {
         let matches = true;
 
-        const properties = ['name', 'author', 'review'];
+        const properties = ['name', 'company', 'type', 'qty', 'id'];
         let containsQuery = false;
 
         properties.forEach((property) => {
@@ -272,7 +262,7 @@ const ProductReviewList = () => {
       });
       setRows(newRows);
     } else {
-      setRows(productreviews);
+      setRows(orders);
     }
   };
 
@@ -318,149 +308,150 @@ const ProductReviewList = () => {
   };
 
   const isSelected = (name) => selected.indexOf(name) !== -1;
-
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   return (
-    <Page title="Product Review">
-      <MainCard title="Product Review" content={false}>
-        <CardContent>
-          <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  )
-                }}
-                onChange={handleSearch}
-                placeholder="Search Product"
-                value={search}
-                size="small"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} sx={{ textAlign: 'right' }}>
-              <Tooltip title="Copy">
-                <IconButton size="large">
-                  <FileCopyIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Print">
-                <IconButton size="large">
-                  <PrintIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Filter">
-                <IconButton size="large">
-                  <FilterListIcon />
-                </IconButton>
-              </Tooltip>
-            </Grid>
-          </Grid>
-        </CardContent>
-
-        {/* table */}
-        <TableContainer>
-          <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-              theme={theme}
-              selected={selected}
+    <MainCard title="Order List" content={false}>
+      <CardContent>
+        <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                )
+              }}
+              onChange={handleSearch}
+              placeholder="Search Order"
+              value={search}
+              size="small"
             />
-            <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  /** Make sure no display bugs if row isn't an OrderData object */
-                  if (typeof row === 'number') return null;
-                  const isItemSelected = isSelected(row.name);
-                  const labelId = `enhanced-table-checkbox-${index}`;
+          </Grid>
+          <Grid item xs={12} sm={6} sx={{ textAlign: 'right' }}>
+            <Tooltip title="Copy">
+              <IconButton size="large">
+                <FileCopyIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Print">
+              <IconButton size="large">
+                <PrintIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Filter">
+              <IconButton size="large">
+                <FilterListIcon />
+              </IconButton>
+            </Tooltip>
+          </Grid>
+        </Grid>
+      </CardContent>
 
-                  return (
-                    <TableRow hover role="checkbox" aria-checked={isItemSelected} tabIndex={-1} key={index} selected={isItemSelected}>
-                      <TableCell padding="checkbox" onClick={(event) => handleClick(event, row.name)} sx={{ pl: 3 }}>
-                        <Checkbox
-                          color="primary"
-                          checked={isItemSelected}
-                          inputProps={{
-                            'aria-labelledby': labelId
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell
-                        component="th"
-                        id={labelId}
-                        scope="row"
-                        onClick={(event) => handleClick(event, row.name)}
-                        sx={{ cursor: 'pointer' }}
-                      >
-                        <Typography variant="body2" sx={{ color: theme.palette.mode === 'dark' ? 'grey.600' : 'grey.900' }}>
-                          {' '}
-                          {row.name}{' '}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>{row.author}</TableCell>
-                      <TableCell>{row.review}</TableCell>
-                      <TableCell align="center">
-                        <Rating name="read-only" value={row.rating} precision={0.5} readOnly />
-                      </TableCell>
-                      <TableCell align="center">{row.date}</TableCell>
-                      <TableCell align="center">
-                        {row.status === 1 && <Chip label="Complete" chipcolor="success" size="small" />}
-                        {row.status === 2 && <Chip label="Processing" chipcolor="orange" size="small" />}
-                        {row.status === 3 && <Chip label="Confirm" chipcolor="primary" size="small" />}
-                      </TableCell>
-                      <TableCell align="center" sx={{ pr: 3 }}>
-                        <IconButton color="primary" size="large">
-                          <VisibilityTwoToneIcon sx={{ fontSize: '1.3rem' }} />
-                        </IconButton>
-                        <IconButton color="secondary" onClick={handleClickOpenDialog} size="large">
-                          <EditTwoToneIcon sx={{ fontSize: '1.3rem' }} />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: 53 * emptyRows
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+      {/* table */}
+      <TableContainer>
+        <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
+          <EnhancedTableHead
+            numSelected={selected.length}
+            order={order}
+            orderBy={orderBy}
+            onSelectAllClick={handleSelectAllClick}
+            onRequestSort={handleRequestSort}
+            rowCount={rows.length}
+            theme={theme}
+            selected={selected}
+          />
+          <TableBody>
+            {stableSort(rows, getComparator(order, orderBy))
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row, index) => {
+                /** Make sure no display bugs if row isn't an OrderData object */
+                if (typeof row === 'number') return null;
 
-          {/* review edit dialog */}
-          <ReviewEdit open={open} handleCloseDialog={handleCloseDialog} />
-        </TableContainer>
+                const isItemSelected = isSelected(row.name);
+                const labelId = `enhanced-table-checkbox-${index}`;
 
-        {/* table pagination */}
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </MainCard>
-    </Page>
+                return (
+                  <TableRow hover role="checkbox" aria-checked={isItemSelected} tabIndex={-1} key={index} selected={isItemSelected}>
+                    <TableCell padding="checkbox" sx={{ pl: 3 }} onClick={(event) => handleClick(event, row.name)}>
+                      <Checkbox
+                        color="primary"
+                        checked={isItemSelected}
+                        inputProps={{
+                          'aria-labelledby': labelId
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell
+                      component="th"
+                      id={labelId}
+                      scope="row"
+                      onClick={(event) => handleClick(event, row.name)}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <Typography variant="subtitle1" sx={{ color: theme.palette.mode === 'dark' ? 'grey.600' : 'grey.900' }}>
+                        {' '}
+                        #{row.id}{' '}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      component="th"
+                      id={labelId}
+                      scope="row"
+                      onClick={(event) => handleClick(event, row.name)}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <Typography variant="subtitle1" sx={{ color: theme.palette.mode === 'dark' ? 'grey.600' : 'grey.900' }}>
+                        {' '}
+                        {row.name}{' '}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>{row.company}</TableCell>
+                    <TableCell>{row.type}</TableCell>
+                    <TableCell align="right">{row.qty}</TableCell>
+                    <TableCell align="center">{row.date}</TableCell>
+                    <TableCell align="center">
+                      {row.status === 1 && <Chip label="Complete" size="small" chipcolor="success" />}
+                      {row.status === 2 && <Chip label="Pending" size="small" chipcolor="orange" />}
+                      {row.status === 3 && <Chip label="Processing" size="small" chipcolor="primary" />}
+                    </TableCell>
+                    <TableCell align="center" sx={{ pr: 3 }}>
+                      <IconButton color="primary" size="large">
+                        <VisibilityTwoToneIcon sx={{ fontSize: '1.3rem' }} />
+                      </IconButton>
+                      <IconButton color="secondary" size="large">
+                        <EditTwoToneIcon sx={{ fontSize: '1.3rem' }} />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            {emptyRows > 0 && (
+              <TableRow
+                style={{
+                  height: 53 * emptyRows
+                }}
+              >
+                <TableCell colSpan={6} />
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* table pagination */}
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={rows.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+    </MainCard>
   );
 };
 
-ProductReviewList.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
-};
-
-export default ProductReviewList;
+export default TableList;

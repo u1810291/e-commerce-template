@@ -41,14 +41,14 @@ const Google = '/assets/images/icons/social-google.svg';
 
 // ============================|| FIREBASE - LOGIN ||============================ //
 
-const FirebaseLogin = ({ loginProp, ...others }) => {
+const AuthLogin = ({ loginProp, ...others }) => {
   const theme = useTheme();
   const scriptedRef = useScriptRef();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
   const { borderRadius } = useConfig();
   const [checked, setChecked] = React.useState(true);
 
-  const { firebaseEmailPasswordSignIn, firebaseGoogleSignIn } = useAuth();
+  const { login, firebaseGoogleSignIn } = useAuth();
   const googleHandler = async () => {
     try {
       await firebaseGoogleSignIn();
@@ -68,66 +68,67 @@ const FirebaseLogin = ({ loginProp, ...others }) => {
 
   return (
     <>
-      <Grid container direction="column" justifyContent="center" spacing={2}>
-        <Grid item xs={12}>
-          <AnimateButton>
-            <Button
-              disableElevation
-              fullWidth
-              onClick={googleHandler}
-              size="large"
-              variant="outlined"
+      {firebaseGoogleSignIn && (
+        <Grid container direction="column" justifyContent="center" spacing={2}>
+          <Grid item xs={12}>
+            <AnimateButton>
+              <Button
+                disableElevation
+                fullWidth
+                onClick={googleHandler}
+                size="large"
+                variant="outlined"
+                sx={{
+                  color: 'grey.700',
+                  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.dark.main : theme.palette.grey[50],
+                  borderColor: theme.palette.mode === 'dark' ? theme.palette.dark.light + 20 : theme.palette.grey[100]
+                }}
+              >
+                <Box sx={{ mr: { xs: 1, sm: 2 }, width: 20, height: 20, marginRight: matchDownSM ? 8 : 16 }}>
+                  <Image src={Google} alt="Berry Dashboard" layout="intrinsic" width="16px" height="16px" />
+                </Box>
+                Sign in with Google
+              </Button>
+            </AnimateButton>
+          </Grid>
+          <Grid item xs={12}>
+            <Box
               sx={{
-                color: 'grey.700',
-                backgroundColor: theme.palette.mode === 'dark' ? theme.palette.dark.main : theme.palette.grey[50],
-                borderColor: theme.palette.mode === 'dark' ? theme.palette.dark.light + 20 : theme.palette.grey[100]
+                alignItems: 'center',
+                display: 'flex'
               }}
             >
-              <Box sx={{ mr: { xs: 1, sm: 2 }, width: 20, height: 20, marginRight: matchDownSM ? 8 : 16 }}>
-                <Image src={Google} alt="Berry Dashboard" layout="intrinsic" width="16px" height="16px" />
-              </Box>
-              Sign in with Google
-            </Button>
-          </AnimateButton>
-        </Grid>
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              alignItems: 'center',
-              display: 'flex'
-            }}
-          >
-            <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
+              <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
 
-            <Button
-              variant="outlined"
-              sx={{
-                cursor: 'unset',
-                m: 2,
-                py: 0.5,
-                px: 7,
-                borderColor:
-                  theme.palette.mode === 'dark' ? `${theme.palette.dark.light + 20} !important` : `${theme.palette.grey[100]} !important`,
-                color: `${theme.palette.grey[900]} !important`,
-                fontWeight: 500,
-                borderRadius: `${borderRadius}px`
-              }}
-              disableRipple
-              disabled
-            >
-              OR
-            </Button>
+              <Button
+                variant="outlined"
+                sx={{
+                  cursor: 'unset',
+                  m: 2,
+                  py: 0.5,
+                  px: 7,
+                  borderColor:
+                    theme.palette.mode === 'dark' ? `${theme.palette.dark.light + 20} !important` : `${theme.palette.grey[100]} !important`,
+                  color: `${theme.palette.grey[900]} !important`,
+                  fontWeight: 500,
+                  borderRadius: `${borderRadius}px`
+                }}
+                disableRipple
+                disabled
+              >
+                OR
+              </Button>
 
-            <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
-          </Box>
+              <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
+            </Box>
+          </Grid>
+          <Grid item xs={12} container alignItems="center" justifyContent="center">
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle1">Sign in with Email address</Typography>
+            </Box>
+          </Grid>
         </Grid>
-        <Grid item xs={12} container alignItems="center" justifyContent="center">
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle1">Sign in with Email address</Typography>
-          </Box>
-        </Grid>
-      </Grid>
-
+      )}
       <Formik
         initialValues={{
           email: 'info@codedthemes.com',
@@ -140,7 +141,7 @@ const FirebaseLogin = ({ loginProp, ...others }) => {
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           try {
-            await firebaseEmailPasswordSignIn(values.email, values.password).then(
+            await login(values.email, values.password).then(
               () => {
                 // WARNING: do not set any formik state here as formik might be already destroyed here. You may get following error by doing so.
                 // Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application.
@@ -254,8 +255,8 @@ const FirebaseLogin = ({ loginProp, ...others }) => {
   );
 };
 
-FirebaseLogin.propTypes = {
+AuthLogin.propTypes = {
   loginProp: PropTypes.number
 };
 
-export default FirebaseLogin;
+export default AuthLogin;
